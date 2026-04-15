@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DMAE — Organograma v0</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --accent: #10b8c7;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #b6c6d8;
+      --border: #dbe4ef;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: grid;
+      gap: 10px;
+    }
+    .headline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    input {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      min-width: 240px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .metric {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .metric .label { font-size: 12px; color: var(--muted); }
+    .metric .value { font-size: 26px; font-weight: 700; }
+
+    main { padding: 12px; overflow: auto; }
+
+    .tree { list-style: none; margin: 0; padding: 0 0 0 24px; }
+    .tree ul {
+      list-style: none;
+      margin: 0;
+      padding-left: 32px;
+      border-left: 2px solid var(--line);
+    }
+    .tree li { margin: 14px 0; position: relative; }
+    .tree li::before {
+      content: "";
+      position: absolute;
+      left: -32px;
+      top: 34px;
+      width: 32px;
+      border-top: 2px solid var(--line);
+    }
+    .tree > li::before { display: none; }
+
+    .card {
+      width: 290px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(11, 27, 61, 0.06);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(11, 27, 61, 0.14); }
+    .avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: #d0f3f6;
+      border: 2px solid var(--accent);
+      display: grid; place-items: center;
+      font-weight: 700; color: #05626b;
+    }
+    .name { font-weight: 700; }
+    .role { color: #0d93a0; font-size: 13px; }
+    .func, .unit { font-size: 12px; color: var(--muted); }
+    .hidden { opacity: .18; }
+
+    .panel {
+      position: fixed;
+      right: 0; top: 0; bottom: 0;
+      width: min(460px, 95vw);
+      background: #fff;
+      border-left: 1px solid var(--border);
+      transform: translateX(105%);
+      transition: transform .2s ease;
+      z-index: 30;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .panel.open { transform: translateX(0); }
+    .panel h3 { margin-top: 0; }
+    .pill { display: inline-block; font-size: 12px; padding: 4px 8px; border-radius: 999px; background: #ecfeff; color: #0e7490; }
+    .section { margin: 14px 0; }
+    .section h4 { margin: 0 0 6px; }
+    .close {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="headline">
+      <strong>DMAE — Organograma institucional (Protótipo v0)</strong>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Buscar por nome, cargo, função ou unidade..." />
+      </div>
+    </div>
+    <div class="metrics" id="metrics"></div>
+  </header>
+
+  <main>
+    <ul class="tree" id="tree"></ul>
+  </main>
+
+  <aside class="panel" id="profilePanel" aria-live="polite"></aside>
+
+  <script>
+    const people = [
+      {id:'n1', parent:null, nome:'Direção-Geral DMAE', cargo:'Diretor-Geral', funcao:'Gestão estratégica do DMAE', unidade:'Diretoria-Geral', foto:'DG', contratos:['Contrato 1001/2026 (água)'], suplentes:['Marina Alves'], equipamentos:['Notebook DG-01','Ramal 1000']},
+      {id:'n2', parent:'n1', nome:'Gabinete da Presidência', cargo:'Chefia de Gabinete', funcao:'Coordenação institucional', unidade:'GAB-PRES', foto:'GP', contratos:['Contrato 1010/2026 (assessoria)'], suplentes:['João Costa'], equipamentos:['Notebook GP-02']},
+      {id:'n3', parent:'n1', nome:'Diretoria Executiva', cargo:'Diretor Executivo', funcao:'Integração operacional', unidade:'GAB-DE', foto:'DE', contratos:['Contrato 1020/2026 (manutenção)'], suplentes:['Luiza Mota'], equipamentos:['Notebook DE-03']},
+      {id:'n4', parent:'n1', nome:'Delegação de Controle', cargo:'Coordenador de Controle', funcao:'Conformidade e controle interno', unidade:'C-CRAEPC', foto:'DC', contratos:['Contrato 1099/2026 (auditoria)'], suplentes:['Carlos Vidal'], equipamentos:['Desktop DC-01']},
+      {id:'n5', parent:'n3', nome:'Diretoria de Operações', cargo:'Diretor', funcao:'Operação de redes e ETA', unidade:'DIR-OP', foto:'OP', contratos:['Contrato 2001/2026 (bombas)'], suplentes:['Rita Nunes'], equipamentos:['Tablet OP-11']},
+      {id:'n6', parent:'n3', nome:'Diretoria Administrativa', cargo:'Diretor', funcao:'Pessoas, compras e patrimônio', unidade:'DIR-ADM', foto:'AD', contratos:['Contrato 2005/2026 (terceirização)'], suplentes:['Elisa Pires'], equipamentos:['Notebook ADM-21']},
+      {id:'n7', parent:'n3', nome:'Diretoria Financeira', cargo:'Diretor', funcao:'Orçamento e execução financeira', unidade:'DIR-FIN', foto:'FN', contratos:['Contrato 2015/2026 (sistemas)'], suplentes:['Bruno Lara'], equipamentos:['Desktop FIN-05']},
+      {id:'n8', parent:'n5', nome:'Coord. ETA Norte', cargo:'Coordenador', funcao:'Operação ETA Norte', unidade:'CO-ETA-N', foto:'EN', contratos:['Contrato 3001/2026 (insumos ETA)'], suplentes:['Pablo Lins'], equipamentos:['Rádio EN-07']},
+      {id:'n9', parent:'n5', nome:'Coord. Redes Sul', cargo:'Coordenador', funcao:'Manutenção de redes', unidade:'CO-RED-S', foto:'RS', contratos:['Contrato 3005/2026 (tubulações)'], suplentes:['Ana Flor'], equipamentos:['Veículo RS-12']},
+      {id:'n10', parent:'n6', nome:'Patrimônio', cargo:'Chefe de Setor', funcao:'Gestão patrimonial', unidade:'C-PATRI', foto:'PT', contratos:['Contrato 4001/2026 (inventário)'], suplentes:['Mauro Gil'], equipamentos:['Leitor PT-03']},
+      {id:'n11', parent:'n6', nome:'Gestão de Pessoas', cargo:'Chefe de Setor', funcao:'Cadastro e movimentações', unidade:'C-GP', foto:'GP', contratos:['Contrato 4007/2026 (capacitação)'], suplentes:['Nina Reis'], equipamentos:['Notebook GP-09']},
+      {id:'n12', parent:'n7', nome:'Contabilidade', cargo:'Chefe de Setor', funcao:'Registros contábeis', unidade:'C-CONT', foto:'CT', contratos:['Contrato 5002/2026 (suporte contábil)'], suplentes:['Davi Paz'], equipamentos:['Desktop CT-04']}
+    ];
+
+    const map = new Map(people.map(p => [p.id, p]));
+    const children = new Map();
+    people.forEach(p => {
+      if (!children.has(p.parent)) children.set(p.parent, []);
+      children.get(p.parent).push(p.id);
+    });
+
+    function renderNode(id) {
+      const p = map.get(id);
+      const li = document.createElement('li');
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.dataset.id = p.id;
+      card.innerHTML = `
+        <div class="avatar" aria-hidden="true">${p.foto}</div>
+        <div>
+          <div class="name">${p.nome}</div>
+          <div class="role">${p.cargo}</div>
+          <div class="func">${p.funcao}</div>
+          <div class="unit">${p.unidade}</div>
+        </div>`;
+      card.addEventListener('click', () => openProfile(p));
+      li.appendChild(card);
+
+      const kids = children.get(id) || [];
+      if (kids.length) {
+        const ul = document.createElement('ul');
+        kids.forEach(k => ul.appendChild(renderNode(k)));
+        li.appendChild(ul);
+      }
+      return li;
+    }
+
+    function renderTree() {
+      const root = (children.get(null) || [])[0];
+      const tree = document.getElementById('tree');
+      tree.innerHTML = '';
+      if (root) tree.appendChild(renderNode(root));
+    }
+
+    function renderMetrics() {
+      const rootCount = (children.get(null) || []).length;
+      const contracts = people.reduce((acc, p) => acc + p.contratos.length, 0);
+      const units = new Set(people.map(p => p.unidade)).size;
+      const metrics = [
+        ['Pessoas no protótipo', people.length],
+        ['Unidades mapeadas', units],
+        ['Contratos vinculados', contracts],
+        ['Raízes no organograma', rootCount]
+      ];
+      const host = document.getElementById('metrics');
+      host.innerHTML = metrics.map(([l,v]) => `<div class="metric"><div class="label">${l}</div><div class="value">${v}</div></div>`).join('');
+    }
+
+    function openProfile(p) {
+      const panel = document.getElementById('profilePanel');
+      panel.innerHTML = `
+        <button class="close" id="closePanel">Fechar</button>
+        <h3>${p.nome}</h3>
+        <div class="pill">${p.unidade}</div>
+        <p><strong>Cargo:</strong> ${p.cargo}<br><strong>Função:</strong> ${p.funcao}</p>
+
+        <div class="section">
+          <h4>Contratos como fiscal</h4>
+          <ul>${p.contratos.map(c => `<li>${c}</li>`).join('')}</ul>
+        </div>
+
+        <div class="section">
+          <h4>Suplentes</h4>
+          <ul>${p.suplentes.map(s => `<li>${s}</li>`).join('')}</ul>
+        </div>
+
+        <div class="section">
+          <h4>Equipamentos sob responsabilidade</h4>
+          <ul>${p.equipamentos.map(e => `<li>${e}</li>`).join('')}</ul>
+        </div>
+      `;
+      panel.classList.add('open');
+      document.getElementById('closePanel').onclick = () => panel.classList.remove('open');
+    }
+
+    function search(term) {
+      const q = term.trim().toLowerCase();
+      document.querySelectorAll('.card').forEach(card => {
+        const p = map.get(card.dataset.id);
+        const txt = `${p.nome} ${p.cargo} ${p.funcao} ${p.unidade}`.toLowerCase();
+        card.classList.toggle('hidden', q && !txt.includes(q));
+      });
+    }
+
+    document.getElementById('search').addEventListener('input', e => search(e.target.value));
+
+    renderMetrics();
+    renderTree();
+  </script>
+</body>
+</html>
